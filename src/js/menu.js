@@ -1,3 +1,7 @@
+import vegyImage from "../img/tabs/vegy.jpg";
+import eliteImage from "../img/tabs/elite.jpg";
+import postImage from "../img/tabs/post.jpg";
+
 window.addEventListener("DOMContentLoaded", () => {
   class MenuCard {
     constructor(
@@ -45,21 +49,21 @@ window.addEventListener("DOMContentLoaded", () => {
   const data = {
     first: new MenuCard(
       "Меню 'Фітнеc'",
-      "/src/img/tabs/vegy.jpg",
+      vegyImage,
       "vegy",
       "Меню «Фітнес» — це новий підхід до приготування страв: більше свіжих овочів та фруктів. Продукт для активних і здорових людей. Це абсолютно новий продукт за оптимальною ціною та високої якості!",
       9,
     ).render(),
     second: new MenuCard(
       "Меню ʼПреміумʼ",
-      "/src/img/tabs/elite.jpg",
+      eliteImage,
       "elite",
       "У меню «Преміум» ми використовуємо не лише гарний дизайн упаковки, а й якісне приготування страв. Червона риба, морепродукти, фрукти — ресторанне меню без відвідування ресторану!",
       10,
     ).render(),
     third: new MenuCard(
       "Меню 'Постне'",
-      "/src/img/tabs/post.jpg",
+      postImage,
       "post",
       "Меню «Постне» — це ретельний підбір інгредієнтів: повна відсутність продуктів тваринного походження, молоко з мигдалю, вівса, кокоса або гречки, оптимальна кількість білків завдяки тофу та імпортним вегетаріанським стейкам.",
       13,
