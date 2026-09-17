@@ -1,15 +1,12 @@
 import "../scss/style.scss";
-import vegyImage from "../img/tabs/vegy.jpg";
-import eliteImage from "../img/tabs/elite.jpg";
-import postImage from "../img/tabs/post.jpg";
 
 window.addEventListener("DOMContentLoaded", () => {
   //menu
   class MenuCard {
     constructor(
-      title,
       img,
-      alt,
+      altimg,
+      title,
       descr,
       price,
       parentSelector = ".menu__field .container",
@@ -17,7 +14,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ) {
       this.title = title;
       this.img = img;
-      this.alt = alt;
+      this.alt = altimg;
       this.descr = descr;
       this.price = price;
       this.classes = classes;
@@ -55,35 +52,52 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  const data = {
-    first: new MenuCard(
-      "Меню 'Фітнеc'",
-      vegyImage,
-      "vegy",
-      "Меню «Фітнес» — це новий підхід до приготування страв: більше свіжих овочів та фруктів. Продукт для активних і здорових людей. Це абсолютно новий продукт за оптимальною ціною та високої якості!",
-      9,
-      undefined,
-      "menu__item",
-    ).render(),
-    second: new MenuCard(
-      "Меню ʼПреміумʼ",
-      eliteImage,
-      "elite",
-      "У меню «Преміум» ми використовуємо не лише гарний дизайн упаковки, а й якісне приготування страв. Червона риба, морепродукти, фрукти — ресторанне меню без відвідування ресторану!",
-      10,
-      undefined,
-      "menu__item",
-    ).render(),
-    third: new MenuCard(
-      "Меню 'Постне'",
-      postImage,
-      "post",
-      "Меню «Постне» — це ретельний підбір інгредієнтів: повна відсутність продуктів тваринного походження, молоко з мигдалю, вівса, кокоса або гречки, оптимальна кількість білків завдяки тофу та імпортним вегетаріанським стейкам.",
-      13,
-      undefined,
-      "menu__item",
-    ).render(),
+  const getResource = async (url) => {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+    }
+
+    return await res.json();
   };
+
+  getResource("http://localhost:3000/menu").then((data) => {
+    data.forEach(({ img, altimg, title, descr, price }) => {
+      new MenuCard(
+        img,
+        altimg,
+        title,
+        descr,
+        price,
+        undefined,
+        "menu__item",
+      ).render();
+    });
+  });
+
+  // getResource("http://localhost:3000/menu").then((data) => createCard(data));
+
+  // function createCard(data) {
+  //   data.forEach(({ img, altimg, title, descr, price }) => {
+  //     const element = document.createElement("div");
+
+  //     element.classList.add("menu__item");
+  //     element.innerHTML = `<img src=${img} alt="${altimg}">
+  //           <h3 class="menu__item-subtitle">${title}"</h3>
+  //           <div class="menu__item-descr">
+  //         ${descr}
+  //           </div>
+  //           <div class="menu__item-divider"></div>
+  //           <div class="menu__item-price">
+  //             <div class="menu__item-cost">Ціна:</div>
+  //             <div class="menu__item-total"><span>${price}</span> грн/день</div>
+  //           </div>
+  // `;
+
+  //     document.querySelector(".menu .container").append(element);
+  //   });
+  // }
 
   //tabs
   const tabs = document.querySelectorAll(".tabheader__item"),
@@ -124,7 +138,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   //timer
-  const deadline = "2026-9-1";
+  const deadline = "2026-10-1";
 
   function getTimeRemaining(endtime) {
     let days, hours, minutes, seconds;
@@ -245,10 +259,22 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   forms.forEach((item) => {
-    postData(item);
+    bindPostData(item);
   });
 
-  function postData(form) {
+  const postData = async (url, data) => {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: data,
+    });
+
+    return await res.json();
+  };
+
+  function bindPostData(form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
 
@@ -258,31 +284,23 @@ window.addEventListener("DOMContentLoaded", () => {
       margin: 0 auto;`;
       form.insertAdjacentElement("afterend", statusMessage);
 
-      const request = new XMLHttpRequest();
-      request.open("POST", "server.php");
-
-      request.setRequestHeader("Content-type", "application/json");
       const formData = new FormData(form);
 
-      const object = {};
-      formData.forEach(function (value, key) {
-        object[key] = value;
-      });
+      const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-      const json = JSON.stringify(object);
-
-      request.send(json);
-
-      request.addEventListener("load", () => {
-        if (request.status === 200) {
-          console.log(request.response);
+      postData("http://localhost:3000/requests", json)
+        .then((data) => {
+          console.log(data);
           showThanksModal(message.succes);
-          form.reset();
+
           statusMessage.remove();
-        } else {
+        })
+        .catch(() => {
           showThanksModal(message.failure);
-        }
-      });
+        })
+        .finally(() => {
+          form.reset();
+        });
     });
   }
 
@@ -307,4 +325,330 @@ window.addEventListener("DOMContentLoaded", () => {
       closeModal();
     }, 4000);
   }
+  //slider
+  // const sliderPrev = document.querySelector(".offer__slider-prev"),
+  //   sliderNext = document.querySelector(".offer__slider-next"),
+  //   current = document.querySelector("#current"),
+  //   total = document.querySelector("#total"),
+  //   slider = document.querySelectorAll(".offer__slide");
+
+  // function showSlide(i) {
+  //   slider[i].classList.add("show");
+  //   slider[i].classList.remove("hide");
+  // }
+
+  // function hideSlides() {
+  //   slider.forEach((e, i) => {
+  //     slider[i].classList.add("hide");
+  //     slider[i].classList.remove("show");
+  //   });
+  // }
+
+  // hideSlides();
+  // showSlide(0);
+  // current.innerHTML = "01";
+
+  // let counter = 1;
+  // let totalCounter = slider.length;
+  // total.innerHTML = `0${totalCounter}`;
+
+  // sliderNext.addEventListener("click", (e) => {
+  //   const target = e.target;
+  //   if (target && target.classList.contains("offer__slider-next")) {
+  //     if (counter === totalCounter) {
+  //       counter = 0;
+  //     }
+  //     hideSlides();
+  //     counter++;
+  //     if (counter < 10) {
+  //       current.innerHTML = `0${counter}`;
+  //     } else {
+  //       current.innerHTML = `${counter}`;
+  //     }
+  //     showSlide(counter - 1);
+  //   }
+  // });
+
+  // sliderPrev.addEventListener("click", (e) => {
+  //   const target = e.target;
+  //   if (target && target.classList.contains("offer__slider-prev")) {
+  //     hideSlides();
+  //     counter--;
+  //     if (counter <= 0) {
+  //       counter = totalCounter;
+  //     }
+  //     if (counter < 10) {
+  //       current.innerHTML = `0${counter}`;
+  //     } else if (counter >= 10) {
+  //       current.innerHTML = `${counter}`;
+  //     }
+  //     showSlide(counter - 1);
+  //   }
+  // });
+  const slides = document.querySelectorAll(".offer__slide"),
+    slider = document.querySelector(".offer__slider"),
+    prev = document.querySelector(".offer__slider-prev"),
+    next = document.querySelector(".offer__slider-next"),
+    total = document.querySelector("#total"),
+    current = document.querySelector("#current"),
+    slidesWrapper = document.querySelector(".offer__slider-wrapper"),
+    slidesField = document.querySelector(".offer__slider-inner"),
+    width = window.getComputedStyle(slidesWrapper).width;
+
+  let slideIndex = 1;
+  let offset = 0;
+
+  if (slides.length < 10) {
+    total.textContent = `0${slides.length}`;
+    current.textContent = `0${slideIndex}`;
+  } else {
+    total.textContent = slides.length;
+    current.textContent = slideIndex;
+  }
+
+  slidesField.style.width = 100 * slides.length + "%";
+  slidesField.style.display = "flex";
+  slidesField.style.transition = "0.5s all";
+
+  slidesWrapper.style.overflow = "hidden";
+
+  slides.forEach((slide) => {
+    slide.style.width = width;
+  });
+
+  slider.style.position = "relative";
+
+  const indicators = document.createElement("ol"),
+    dots = [];
+
+  indicators.classList.add("carousel-indicators");
+  indicators.style.cssText = `
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 15;
+    display: flex;
+    justify-content: center;
+    margin-right: 15%;
+    margin-left: 15%;
+    list-style: none;
+`;
+  slider.append(indicators);
+
+  for (let i = 0; i < slides.length; i++) {
+    const dot = document.createElement("li");
+    dot.setAttribute("data-slide-to", i + 1);
+    dot.style.cssText = `
+    box-sizing: content-box;
+    flex: 0 1 auto;
+    width: 30px;
+    height: 6px;
+    margin-right: 3px;
+    margin-left: 3px;
+    cursor: pointer;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    opacity: .5;
+    transition: opacity .6s ease;
+  `;
+    if (i == 0) {
+      dot.style.opacity = 1;
+    }
+    indicators.append(dot);
+    dots.push(dot);
+  }
+
+  function deleteNotDigits(str) {
+    return +str.replace(/\D/g, "");
+  }
+
+  function dotOpacity(arr) {
+    arr.forEach((dot) => (dot.style.opacity = ".5"));
+    arr[slideIndex - 1].style.opacity = 1;
+  }
+
+  function slideTranslate(field) {
+    field.style.transform = `translateX(-${offset}px)`;
+  }
+
+  function numInput(cur) {
+    if (slides.length < 10) {
+      cur.textContent = `0${slideIndex}`;
+    } else {
+      cur.textContent = slideIndex;
+    }
+  }
+
+  next.addEventListener("click", () => {
+    if (offset == deleteNotDigits(width) * (slides.length - 1)) {
+      offset = 0;
+    } else {
+      offset += deleteNotDigits(width);
+    }
+
+    slideTranslate(slidesField);
+
+    if (slideIndex == slides.length) {
+      slideIndex = 1;
+    } else {
+      slideIndex++;
+    }
+
+    numInput(current);
+
+    dotOpacity(dots);
+  });
+
+  prev.addEventListener("click", () => {
+    if (offset == 0) {
+      offset = deleteNotDigits(width) * (slides.length - 1);
+    } else {
+      offset -= deleteNotDigits(width);
+    }
+
+    slideTranslate(slidesField);
+
+    if (slideIndex == 1) {
+      slideIndex = slides.length;
+    } else {
+      slideIndex--;
+    }
+
+    numInput(current);
+
+    dotOpacity(dots);
+  });
+
+  dots.forEach((dot) => {
+    dot.addEventListener("click", (e) => {
+      const slideTo = e.target.getAttribute("data-slide-to");
+
+      slideIndex = slideTo;
+      offset = deleteNotDigits(width) * (slideTo - 1);
+
+      slideTranslate(slidesField);
+
+      numInput(current);
+
+      dotOpacity(dots);
+    });
+  });
+
+  //calc
+
+  const result = document.querySelector(".calculating__result span");
+
+  let sex, height, weight, age, ratio;
+
+  if (localStorage.getItem("sex")) {
+    sex = localStorage.getItem("sex");
+  } else {
+    sex = "female";
+    localStorage.setItem("sex", "female");
+  }
+
+  if (localStorage.getItem("ratio")) {
+    ratio = localStorage.getItem("ratio");
+  } else {
+    ratio = "1.375";
+    localStorage.setItem("ratio", "1.375");
+  }
+
+  function initLocalSettings(selector, activeClass) {
+    const elements = document.querySelectorAll(selector);
+
+    elements.forEach((elem) => {
+      elem.classList.remove(activeClass);
+      if (elem.getAttribute("id") === localStorage.getItem("sex")) {
+        elem.classList.add(activeClass);
+      }
+      if (elem.getAttribute("data-ratio") === localStorage.getItem("ratio")) {
+        elem.classList.add(activeClass);
+      }
+    });
+  }
+  initLocalSettings("#gender div", "calculating__choose-item_active");
+  initLocalSettings(
+    ".calculating__choose_big div",
+    "calculating__choose-item_active",
+  );
+
+  function calcTotal() {
+    if (!sex || !height || !weight || !age || !ratio) {
+      result.textContent = "___";
+      return;
+    }
+    if (sex === "female") {
+      result.textContent = Math.round(
+        (447.6 + 9.2 * weight + 3.1 * height - 4.3 * age) * ratio,
+      );
+    } else {
+      result.textContent = Math.round(
+        (88.36 + 13.4 * weight + 4.8 * height - 5.7 * age) * ratio,
+      );
+    }
+  }
+
+  calcTotal();
+
+  function getStaticInformation(selector, activeClass) {
+    const elements = document.querySelectorAll(selector);
+
+    elements.forEach((elem) => {
+      elem.addEventListener("click", (e) => {
+        if (e.target.getAttribute("data-ratio")) {
+          ratio = +e.target.getAttribute("data-ratio");
+          localStorage.setItem("ratio", +e.target.getAttribute("data-ratio"));
+        } else {
+          sex = e.target.getAttribute("id");
+          localStorage.setItem("sex", e.target.getAttribute("id"));
+        }
+
+        elements.forEach((elem) => {
+          elem.classList.remove(activeClass);
+        });
+
+        e.target.classList.add(activeClass);
+        calcTotal();
+      });
+    });
+  }
+
+  getStaticInformation("#gender div", "calculating__choose-item_active");
+  getStaticInformation(
+    ".calculating__choose_big div",
+    "calculating__choose-item_active",
+  );
+
+  function getDynamicInformation(selector) {
+    const input = document.querySelector(selector);
+
+    input.addEventListener("input", () => {
+      if (input.value.match(/\D/g)) {
+        input.style.border = "1px solid red";
+      } else {
+        input.style.border = "none";
+      }
+
+      switch (input.getAttribute("id")) {
+        case "height":
+          height = +input.value;
+          break;
+        case "weight":
+          weight = +input.value;
+          break;
+        case "age":
+          age = +input.value;
+          break;
+      }
+      calcTotal();
+    });
+  }
+
+  getDynamicInformation("#height");
+  getDynamicInformation("#weight");
+  getDynamicInformation("#age");
 });
