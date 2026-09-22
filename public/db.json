@@ -25,17 +25,6 @@
       "id": "gkd40ugY2nM"
     }
   ],
-  "requests": [
-    {
-      "name": "sdasdasd",
-      "phone": "380668186492",
-      "id": "jtjvbzrAjks"
-    },
-    {
-      "name": "sdf",
-      "phone": "380668186492",
-      "id": "qm8pEE2U0M0"
-    }
-  ],
+  "requests": [],
   "$schema": "./node_modules/json-server/schema.json"
 }
