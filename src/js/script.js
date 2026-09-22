@@ -1,3 +1,6 @@
+import "core-js/features/object/from-entries";
+import "whatwg-fetch";
+
 import "../scss/style.scss";
 
 import { initCalc } from "./components/calc";
